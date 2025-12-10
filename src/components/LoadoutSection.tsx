@@ -53,8 +53,8 @@ const features = [
   },
   {
     icon: Eye,
-    title: "Visual Settings",
-    description: "Optimize graphics for performance",
+    title: "Custom Skins",
+    description: "Browse and preview weapon skins",
   },
   {
     icon: Share2,

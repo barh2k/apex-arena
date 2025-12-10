@@ -76,16 +76,14 @@ const LeaderboardSection = () => {
 
       <div className="container relative z-10 mx-auto px-4">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-12">
-          <div>
-            <h2 className="font-display text-3xl sm:text-4xl font-bold mb-2">
-              GLOBAL <span className="text-gradient-accent">LEADERBOARD</span>
-            </h2>
-            <p className="text-muted-foreground">
-              Top players competing for glory this season
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+        <div className="text-center mb-12">
+          <h2 className="font-display text-3xl sm:text-4xl font-bold mb-2">
+            GLOBAL <span className="text-gradient-accent">LEADERBOARD</span>
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Top players competing for glory this season
+          </p>
+          <div className="flex items-center justify-center gap-2">
             <Button variant="gaming" size="sm">
               Daily
             </Button>
