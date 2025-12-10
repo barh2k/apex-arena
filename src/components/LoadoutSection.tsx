@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Crosshair, Palette, Eye, Share2, Star, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import CrosshairEditor from "./CrosshairEditor";
 const loadouts = [
   {
     id: 1,
@@ -71,6 +72,8 @@ const formatNumber = (num: number) => {
 };
 
 const LoadoutSection = () => {
+  const [crosshairEditorOpen, setCrosshairEditorOpen] = useState(false);
+
   return (
     <section id="loadout" className="relative py-24 overflow-hidden">
       {/* Background Effects */}
@@ -92,7 +95,14 @@ const LoadoutSection = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="card-gaming p-5 text-center group"
+              className={`card-gaming p-5 text-center group ${
+                feature.title === "Custom Crosshairs" ? "cursor-pointer" : ""
+              }`}
+              onClick={() => {
+                if (feature.title === "Custom Crosshairs") {
+                  setCrosshairEditorOpen(true);
+                }
+              }}
             >
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 border border-primary/30 mb-4 group-hover:border-primary transition-colors">
                 <feature.icon className="h-6 w-6 text-primary" />
@@ -158,6 +168,12 @@ const LoadoutSection = () => {
             <ChevronRight className="ml-1 h-5 w-5" />
           </Button>
         </div>
+
+        {/* Crosshair Editor Modal */}
+        <CrosshairEditor
+          isOpen={crosshairEditorOpen}
+          onClose={() => setCrosshairEditorOpen(false)}
+        />
       </div>
     </section>
   );
