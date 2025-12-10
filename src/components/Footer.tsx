@@ -17,12 +17,12 @@ const Footer = () => {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border border-primary/30">
                 <Crosshair className="h-6 w-6 text-primary" />
               </div>
-              <span className="font-display text-xl font-bold tracking-wider">
-                NEXUS<span className="text-primary">GG</span>
-              </span>
+            <span className="font-display text-xl font-bold tracking-wider">
+                Play<span className="text-primary">CS</span>.gg
+            </span>
             </a>
             <p className="text-sm text-muted-foreground mb-6">
-              The ultimate CS2 competitive platform. Play, compete, and dominate.
+              The ultimate CS2 competitive platform. Play, compete, dominate.
             </p>
             <div className="flex items-center gap-3">
               <a
@@ -107,7 +107,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2024 NEXUSGG. All rights reserved.
+            © 2024 PlayCS.gg. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground">
             Not affiliated with Valve Corporation
