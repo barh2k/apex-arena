@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Copy, Check, RotateCcw } from "lucide-react";
+import { X, Copy, Check, RotateCcw, Share2, Save, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -27,6 +27,12 @@ interface CrosshairSettings {
   fixedCrosshairGap: number;
 }
 
+interface ProPreset {
+  name: string;
+  team: string;
+  settings: CrosshairSettings;
+}
+
 const defaultSettings: CrosshairSettings = {
   style: 4,
   size: 3,
@@ -42,6 +48,49 @@ const defaultSettings: CrosshairSettings = {
   followRecoil: false,
   fixedCrosshairGap: -3,
 };
+
+const proPresets: ProPreset[] = [
+  {
+    name: "s1mple",
+    team: "NAVI",
+    settings: { ...defaultSettings, style: 4, size: 1, gap: -3, thickness: 1, color: "#00FF00", dot: false, outlineEnabled: true, outline: 0.5, tStyle: false, alpha: 255 },
+  },
+  {
+    name: "NiKo",
+    team: "G2",
+    settings: { ...defaultSettings, style: 4, size: 1.5, gap: -3, thickness: 1, color: "#00FF00", dot: false, outlineEnabled: true, outline: 1, tStyle: false, alpha: 255 },
+  },
+  {
+    name: "ZywOo",
+    team: "Vitality",
+    settings: { ...defaultSettings, style: 4, size: 2, gap: -2, thickness: 1, color: "#00FFFF", dot: false, outlineEnabled: true, outline: 1, tStyle: false, alpha: 255 },
+  },
+  {
+    name: "m0NESY",
+    team: "G2",
+    settings: { ...defaultSettings, style: 4, size: 1, gap: -2, thickness: 1, color: "#00FF00", dot: true, outlineEnabled: true, outline: 0.5, tStyle: false, alpha: 255 },
+  },
+  {
+    name: "device",
+    team: "Astralis",
+    settings: { ...defaultSettings, style: 4, size: 2.5, gap: -2, thickness: 1, color: "#00FF00", dot: false, outlineEnabled: true, outline: 1, tStyle: false, alpha: 255 },
+  },
+  {
+    name: "ropz",
+    team: "FaZe",
+    settings: { ...defaultSettings, style: 4, size: 1.5, gap: -3, thickness: 1, color: "#FFFFFF", dot: false, outlineEnabled: true, outline: 1, tStyle: false, alpha: 255 },
+  },
+  {
+    name: "Twistzz",
+    team: "FaZe",
+    settings: { ...defaultSettings, style: 5, size: 1, gap: -2, thickness: 0.5, color: "#00FF00", dot: false, outlineEnabled: false, outline: 0, tStyle: false, alpha: 255 },
+  },
+  {
+    name: "rain",
+    team: "FaZe",
+    settings: { ...defaultSettings, style: 4, size: 2, gap: -2, thickness: 1, color: "#00FF00", dot: false, outlineEnabled: true, outline: 1, tStyle: true, alpha: 255 },
+  },
+];
 
 const colorPresets = [
   { name: "Green", value: "#00FF00" },
@@ -63,9 +112,24 @@ const styleOptions = [
   { value: 5, label: "Legacy" },
 ];
 
+const STORAGE_KEY = "playcs_saved_crosshairs";
+
+interface SavedCrosshair {
+  id: string;
+  name: string;
+  settings: CrosshairSettings;
+  createdAt: number;
+}
+
 const CrosshairEditor = ({ isOpen, onClose }: CrosshairEditorProps) => {
   const [settings, setSettings] = useState<CrosshairSettings>(defaultSettings);
   const [copied, setCopied] = useState(false);
+  const [savedCrosshairs, setSavedCrosshairs] = useState<SavedCrosshair[]>(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [saveName, setSaveName] = useState("");
+  const [showSaveInput, setShowSaveInput] = useState(false);
 
   if (!isOpen) return null;
 
@@ -80,6 +144,21 @@ const CrosshairEditor = ({ isOpen, onClose }: CrosshairEditorProps) => {
     return `cl_crosshairstyle ${settings.style}; cl_crosshairsize ${settings.size}; cl_crosshairgap ${settings.gap}; cl_crosshairthickness ${settings.thickness}; cl_crosshair_outlinethickness ${settings.outline}; cl_crosshair_drawoutline ${settings.outlineEnabled ? 1 : 0}; cl_crosshairdot ${settings.dot ? 1 : 0}; cl_crosshair_t ${settings.tStyle ? 1 : 0}; cl_crosshairalpha ${settings.alpha}; cl_crosshaircolor 5; cl_crosshaircolor_r ${parseInt(settings.color.slice(1, 3), 16)}; cl_crosshaircolor_g ${parseInt(settings.color.slice(3, 5), 16)}; cl_crosshaircolor_b ${parseInt(settings.color.slice(5, 7), 16)}`;
   };
 
+  const generateShareCode = () => {
+    const encoded = btoa(JSON.stringify(settings));
+    return encoded;
+  };
+
+  const loadFromShareCode = (code: string) => {
+    try {
+      const decoded = JSON.parse(atob(code));
+      setSettings(decoded);
+      toast.success("Crosshair loaded from share code!");
+    } catch {
+      toast.error("Invalid share code");
+    }
+  };
+
   const copyCommand = () => {
     navigator.clipboard.writeText(generateConsoleCommand());
     setCopied(true);
@@ -87,9 +166,56 @@ const CrosshairEditor = ({ isOpen, onClose }: CrosshairEditorProps) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const copyShareCode = () => {
+    const shareCode = generateShareCode();
+    navigator.clipboard.writeText(shareCode);
+    toast.success("Share code copied! Send it to your friends.");
+  };
+
+  const saveCrosshair = () => {
+    if (!saveName.trim()) {
+      toast.error("Please enter a name for your crosshair");
+      return;
+    }
+    const newSaved: SavedCrosshair = {
+      id: Date.now().toString(),
+      name: saveName.trim(),
+      settings: { ...settings },
+      createdAt: Date.now(),
+    };
+    const updated = [...savedCrosshairs, newSaved];
+    setSavedCrosshairs(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    setSaveName("");
+    setShowSaveInput(false);
+    toast.success(`Crosshair "${newSaved.name}" saved!`);
+  };
+
+  const deleteSavedCrosshair = (id: string) => {
+    const updated = savedCrosshairs.filter((c) => c.id !== id);
+    setSavedCrosshairs(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    toast.success("Crosshair deleted");
+  };
+
+  const loadSavedCrosshair = (saved: SavedCrosshair) => {
+    setSettings(saved.settings);
+    toast.success(`Loaded "${saved.name}"`);
+  };
+
+  const applyProPreset = (preset: ProPreset) => {
+    setSettings(preset.settings);
+    toast.success(`Applied ${preset.name}'s crosshair`);
+  };
+
   const resetSettings = () => {
     setSettings(defaultSettings);
     toast.success("Settings reset to default");
+  };
+
+  const handleImportShareCode = () => {
+    const code = prompt("Paste share code:");
+    if (code) loadFromShareCode(code);
   };
 
   // Calculate crosshair rendering
@@ -305,7 +431,89 @@ const CrosshairEditor = ({ isOpen, onClose }: CrosshairEditorProps) => {
                   Reset
                 </Button>
               </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1" onClick={copyShareCode}>
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1" onClick={handleImportShareCode}>
+                  Import
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setShowSaveInput(!showSaveInput)}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save
+                </Button>
+              </div>
+              {showSaveInput && (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={saveName}
+                    onChange={(e) => setSaveName(e.target.value)}
+                    placeholder="Crosshair name..."
+                    className="flex-1 px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm focus:outline-none focus:border-primary"
+                    onKeyDown={(e) => e.key === "Enter" && saveCrosshair()}
+                  />
+                  <Button variant="gaming" size="sm" onClick={saveCrosshair}>
+                    Save
+                  </Button>
+                </div>
+              )}
             </div>
+
+            {/* Pro Presets */}
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground flex items-center gap-2">
+                <User className="h-4 w-4" /> Pro Player Presets
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                {proPresets.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => applyProPreset(preset)}
+                    className="flex items-center justify-between px-3 py-2 bg-secondary/30 hover:bg-secondary/50 border border-border hover:border-primary/50 rounded-lg transition-all text-left"
+                  >
+                    <div>
+                      <span className="font-medium text-sm">{preset.name}</span>
+                      <span className="text-xs text-muted-foreground ml-2">{preset.team}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Saved Crosshairs */}
+            {savedCrosshairs.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">Saved Crosshairs</Label>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {savedCrosshairs.map((saved) => (
+                    <div
+                      key={saved.id}
+                      className="flex items-center justify-between px-3 py-2 bg-secondary/30 border border-border rounded-lg"
+                    >
+                      <button
+                        onClick={() => loadSavedCrosshair(saved)}
+                        className="text-sm font-medium hover:text-primary transition-colors"
+                      >
+                        {saved.name}
+                      </button>
+                      <button
+                        onClick={() => deleteSavedCrosshair(saved.id)}
+                        className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Settings */}
