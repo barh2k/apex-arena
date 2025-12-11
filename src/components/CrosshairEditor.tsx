@@ -474,6 +474,7 @@ const CrosshairEditor = ({ isOpen, onClose }: CrosshairEditorProps) => {
               <div className="grid grid-cols-2 gap-2">
                 {proPresets.map((preset) => (
                   <button
+                    type="button"
                     key={preset.name}
                     onClick={() => applyProPreset(preset)}
                     className="flex items-center justify-between px-3 py-2 bg-secondary/30 hover:bg-secondary/50 border border-border hover:border-primary/50 rounded-lg transition-all text-left"
@@ -524,6 +525,7 @@ const CrosshairEditor = ({ isOpen, onClose }: CrosshairEditorProps) => {
               <div className="grid grid-cols-2 gap-2">
                 {styleOptions.map((option) => (
                   <button
+                    type="button"
                     key={option.value}
                     onClick={() => updateSetting("style", option.value)}
                     className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
@@ -544,6 +546,7 @@ const CrosshairEditor = ({ isOpen, onClose }: CrosshairEditorProps) => {
               <div className="flex flex-wrap gap-2">
                 {colorPresets.map((color) => (
                   <button
+                    type="button"
                     key={color.value}
                     onClick={() => updateSetting("color", color.value)}
                     className={`w-8 h-8 rounded-lg border-2 transition-all ${
